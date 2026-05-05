@@ -4,7 +4,7 @@ import requests
 import os
 import random
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -21,7 +21,7 @@ import speech_recognition as sr
 from pydub import AudioSegment
 import io
 
-# --- Python 3.13 Fix for 'aifc' removal ---
+# --- Python 3.13 Compatibility Patch ---
 try:
     import aifc
 except ImportError:
@@ -29,19 +29,15 @@ except ImportError:
     from types import ModuleType
     m = ModuleType("aifc")
     m.Error = Exception
-    def mock_open(*args, **kwargs): raise NotImplementedError("aifc was removed in Python 3.13")
+    def mock_open(*args, **kwargs): raise NotImplementedError("aifc removed")
     m.open = mock_open
     sys.modules["aifc"] = m
-# ------------------------------------------
 
 active_calls = {}
 processing_calls = set()
 refresh_pattern_index = 0
-
-# Updated refresh pattern
 REFRESH_PATTERN = [1800, 1545, 2110, 1850, 1340]
 
-# Termux/Local download folder
 DOWNLOAD_FOLDER = './downloads'
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
@@ -52,20 +48,15 @@ def get_next_refresh_time():
     print(f"[🔄] Next refresh in {interval}s")
     return interval
 
-def country_to_flag(country_code):
-    if not country_code or len(country_code) != 2: return "🏳️"
-    return "".join(chr(127397 + ord(c)) for c in country_code.upper())
-
 def detect_country(number):
     try:
         clean_number = re.sub(r"\D", "", number)
-        if clean_number:
-            parsed = phonenumbers.parse("+" + clean_number, None)
-            region = region_code_for_number(parsed)
-            country = pycountry.countries.get(alpha_2=region)
-            if country: return country.name, country_to_flag(region)
-    except: pass
-    return "Unknown", "🏳️"
+        parsed = phonenumbers.parse("+" + clean_number, None)
+        region = region_code_for_number(parsed)
+        country = pycountry.countries.get(alpha_2=region)
+        flag = "".join(chr(127397 + ord(c)) for c in region.upper())
+        return country.name, flag
+    except: return "Unknown", "🏳️"
 
 def send_message_to_admin(text):
     try:
@@ -74,21 +65,8 @@ def send_message_to_admin(text):
         return res.json().get("result", {}).get("message_id") if res.ok else None
     except: return None
 
-def send_message_to_group(text):
-    try:
-        url = f"https://api.telegram.org/bot{config.BOT_TOKEN}/sendMessage"
-        requests.post(url, json={"chat_id": config.GROUP_CHAT_ID, "text": text, "parse_mode": "HTML"})
-    except: pass
-
-def delete_message(chat_id, msg_id):
-    try:
-        url = f"https://api.telegram.org/bot{config.BOT_TOKEN}/deleteMessage"
-        requests.post(url, data={"chat_id": chat_id, "message_id": msg_id})
-    except: pass
-
 def send_voice_to_group(voice_path, caption):
     try:
-        if os.path.getsize(voice_path) < 1000: return False
         url = f"https://api.telegram.org/bot{config.BOT_TOKEN}/sendVoice"
         with open(voice_path, "rb") as voice:
             res = requests.post(url, data={"chat_id": config.GROUP_CHAT_ID, "caption": caption, "parse_mode": "HTML"}, files={"voice": voice})
@@ -96,23 +74,31 @@ def send_voice_to_group(voice_path, caption):
     except: return False
 
 def setup_chrome_driver_with_cookies():
-    """Optimized for Termux"""
+    """Optimized for Selenium 4.9.1 in Termux"""
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--disable-blink-features=AutomationControlled')
-    chrome_options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
     
-    # Force Termux Paths
+    # টারমাক্স স্পেসিফিক পাথ
     chrome_options.binary_location = "/data/data/com.termux/files/usr/bin/chromium"
-    driver_path = "/data/data/com.termux/files/usr/bin/chromedriver"
-    
-    service = Service(executable_path=driver_path)
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+    termux_driver_path = "/data/data/com.termux/files/usr/bin/chromedriver"
 
-    # Load cookies
+    print(f"[🔧] Starting with Selenium 4.9.1... Path: {termux_driver_path}")
+    
+    try:
+        # পদ্ধতি ১: সরাসরি পাথ ব্যবহার (Selenium 4.9.1 এর জন্য আদর্শ)
+        driver = webdriver.Chrome(
+            executable_path=termux_driver_path, 
+            options=chrome_options
+        )
+    except:
+        # পদ্ধতি ২: সার্ভিস অবজেক্ট ব্যবহার
+        service = Service(termux_driver_path)
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+
     try:
         driver.get("https://www.orangecarrier.com")
         time.sleep(2)
@@ -120,17 +106,16 @@ def setup_chrome_driver_with_cookies():
         for cookie in config.ORANGE_COOKIES:
             c = cookie.copy()
             if 'expirationDate' in c: c['expiry'] = int(c['expirationDate'])
-            for key in ['hostOnly', 'storeId', 'sameSite', 'expirationDate']: c.pop(key, None)
+            for key in ['hostOnly', 'storeId', 'sameSite', 'expirationDate']:
+                c.pop(key, None)
             driver.add_cookie(c)
         driver.refresh()
         time.sleep(3)
-    except: pass
-    return driver
+        print("[✅] WebDriver & Cookies Loaded!")
+    except Exception as ce:
+        print(f"[⚠️] Cookie Error: {ce}")
 
-def login_with_cookies(driver):
-    driver.get(config.LOGIN_URL)
-    time.sleep(5)
-    return "dashboard" in driver.current_url or "live/calls" in driver.current_url
+    return driver
 
 def extract_calls(driver):
     global active_calls, processing_calls
@@ -156,7 +141,8 @@ def extract_calls(driver):
             if cid not in current_ids and cid not in processing_calls:
                 info = active_calls.pop(cid)
                 processing_calls.add(cid)
-                if info["admin_msg_id"]: delete_message(config.ADMIN_CHAT_ID, info["admin_msg_id"])
+                if info["admin_msg_id"]:
+                    requests.post(f"https://api.telegram.org/bot{config.BOT_TOKEN}/deleteMessage", data={"chat_id": config.ADMIN_CHAT_ID, "message_id": info["admin_msg_id"]})
                 
                 import threading
                 threading.Thread(target=process_call, args=(driver, info, cid)).start()
@@ -178,17 +164,13 @@ def process_call(driver, info, cid):
             cap = f"📳 New Call Captured!\n\n└ ⏰ Time: {info['at'].strftime('%I:%M:%S %p')}\n└ {info['flag']} {info['country']}\n└ 📞 Number: {masked}"
             send_voice_to_group(path, cap)
             if os.path.exists(path): os.remove(path)
-        else:
-            send_message_to_group(f"😟 Download failed for {info['num']}")
     finally:
         if cid in processing_calls: processing_calls.remove(cid)
 
 def main():
     driver = setup_chrome_driver_with_cookies()
-    if not login_with_cookies(driver):
-        print("[❌] Login failed"); return
-    
     driver.get(config.CALL_URL)
+    
     last_refresh = datetime.now()
     next_interval = get_next_refresh_time()
     
@@ -202,9 +184,7 @@ def main():
             extract_calls(driver)
             time.sleep(config.CHECK_INTERVAL)
         except KeyboardInterrupt: break
-        except Exception as e:
-            print(f"[❌] Error: {e}")
-            time.sleep(5)
+        except: time.sleep(5)
     driver.quit()
 
 if __name__ == "__main__":
