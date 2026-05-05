@@ -44,39 +44,38 @@ else:
     
     # Cookies (paste your cookies here as Python list)
     ORANGE_COOKIES = [
-     {
-        "name": "_fbp",
-        "value": "fb.1.1777985388145.660271859241425319",
-        "domain": ".orangecarrier.com",
-        "path": "/",
-        "expirationDate": 1777985388,
-    }
-    {
-        "domain": "www.orangecarrier.com",
-        "expirationDate": 1777994891,
-        "hostOnly": False,
-        "httpOnly": False,
-        "name": "XSRF-TOKEN",
-        "path": "/",
-        "sameSite": "unspecified",
-        "secure": False,
-        "session": False,
-        "value": "eyJpdiI6Ik5idXZPVVQ1K1BPZnF2Q3FDamExa0E9PSIsInZhbHVlIjoiTE9WdFlvVERHTXZjN2lmNCtEMFl1Tk1zUEJ2dXVnTkRrbmtyYkJZV1Y1VkVpYTdDWEVLYUVnYXlJMUQyVHE2b1NaeXliTXBRTnJ4b0xTSGhqVVNjUFVzNjZWTlpLWDlDRUYwXC9MeXM2WEtFMVNkZjVOemE2K245WXVzYzR3cUVrIiwibWFjIjoiNzc5MjYzNTM5YmNjNmE2NDdiMGFmOWY3ZTM0NTNlNmM0ZDg2OTg5MTgwZjNjZDcxMTQ4NDk5MTk2YWY2OWE2NyJ9"
-    },
-    {
-        "domain": "www.orangecarrier.com",
-        "expirationDate": 1777994891,
-        "hostOnly": False,
-        "httpOnly": False,
-        "name": "orange_carrier_session",
-        "path": "/",
-        "sameSite": "unspecified",
-        "secure": False,
-        "session": False,
-        "value": "eyJpdiI6ImY1ZHR2T1wvaVdjUXlQdFVcL1ZEUjU2dz09IiwidmFsdWUiOiI5dWVKRXdUVEc1Yk54ZEk4Q0RRXC9pZkozbVppc3dqRG1Tc2YyNUF4ZHBMWlIzZW0rWlp3MklhZkcrQVFEVHQ3cHpIdnZYMmVjYTdwSVdjaFpDS1ZLMUl2ZkNXZytVS2FHbXRBbkYrMWRZMk03R2NSZk9pNVNXOGUzZ3NWY05pb3ciLCJtYWMiOiJlMzRkZTA1ZGRiMjg1YTNmOWRjNzg5ODQyMjk2ZThkNmUwZGFiMjg1NGRlZWQ4ZTBlZDEyNDc5MjdmNzdkZmUyIn0%3D"
-    }
-]
-
+        {
+            "name": "_fbp",
+            "value": "fb.1.1777985388145.660271859241425319",
+            "domain": ".orangecarrier.com",
+            "path": "/",
+            "expirationDate": 1777985388,
+        },
+        {
+            "domain": "www.orangecarrier.com",
+            "expirationDate": 1777994891,
+            "hostOnly": False,
+            "httpOnly": False,
+            "name": "XSRF-TOKEN",
+            "path": "/",
+            "sameSite": "unspecified",
+            "secure": False,
+            "session": False,
+            "value": "eyJpdiI6Ik5idXZPVVQ1K1BPZnF2Q3FDamExa0E9PSIsInZhbHVlIjoiTE9WdFlvVERHTXZjN2lmNCtEMFl1Tk1zUEJ2dXVnTkRrbmtyYkJZV1Y1VkVpYTdDWEVLYUVnYXlJMUQyVHE2b1NaeXliTXBRTnJ4b0xTSGhqVVNjUFVzNjZWTlpLWDlDRUYwXC9MeXM2WEtFMVNkZjVOemE2K245WXVzYzR3cUVrIiwibWFjIjoiNzc5MjYzNTM5YmNjNmE2NDdiMGFmOWY3ZTM0NTNlNmM0ZDg2OTg5MTgwZjNjZDcxMTQ4NDk5MTk2YWY2OWE2NyJ9"
+        },
+        {
+            "domain": "www.orangecarrier.com",
+            "expirationDate": 1777994891,
+            "hostOnly": False,
+            "httpOnly": False,
+            "name": "orange_carrier_session",
+            "path": "/",
+            "sameSite": "unspecified",
+            "secure": False,
+            "session": False,
+            "value": "eyJpdiI6ImY1ZHR2T1wvaVdjUXlQdFVcL1ZEUjU2dz09IiwidmFsdWUiOiI5dWVKRXdUVEc1Yk54ZEk4Q0RRXC9pZkozbVppc3dqRG1Tc2YyNUF4ZHBMWlIzZW0rWlp3MklhZkcrQVFEVHQ3cHpIdnZYMmVjYTdwSVdjaFpDS1ZLMUl2ZkNXZytVS2FHbXRBbkYrMWRZMk03R2NSZk9pNVNXOGUzZ3NWY05pb3ciLCJtYWMiOiJlMzRkZTA1ZGRiMjg1YTNmOWRjNzg5ODQyMjk2ZThkNmUwZGFiMjg1NGRlZWQ4ZTBlZDEyNDc5MjdmNzdkZmUyIn0%3D"
+        }
+    ]
     
     # Settings
     MAX_ERRORS = 10
